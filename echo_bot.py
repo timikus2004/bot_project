@@ -5,7 +5,7 @@ import time
 import json
 
 
-
+#creating a bot instance
 bot = telebot.TeleBot("1415374930:AAHfQmdaLrzYDQxYhNXTa0L7xOtTljE5r7s")
 
 STICKER_ID = 'CAACAgIAAxkBAANqX9j3Q9NNtVlV8IgMMr9NbAWBiJ8AAukBAAJWnb0KMRoixENZlv8eBA'
@@ -47,6 +47,7 @@ def command_start(m):
         bot.send_message(cid, "Hello, stranger, let me scan you...")
         bot.send_message(cid, "Scanning complete, I know you now")
         command_help(m)  # show the new user the help page
+
     else:
         bot.send_message(cid, "I already know you, no need for me to scan you again!")
 
