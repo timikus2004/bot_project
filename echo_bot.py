@@ -3,31 +3,86 @@ from telebot import types
 
 import time
 import json
+from bot_helper import print_list
+
 
 
 #creating a bot instance
 bot = telebot.TeleBot("1415374930:AAHfQmdaLrzYDQxYhNXTa0L7xOtTljE5r7s")
 
-STICKER_ID = 'CAACAgIAAxkBAANqX9j3Q9NNtVlV8IgMMr9NbAWBiJ8AAukBAAJWnb0KMRoixENZlv8eBA'
-AUDIO_ID = 'CQACAgIAAxkBAANvX9j5tCmrs3Y7CWPWyOt1qZLcXbgAAigJAAJ8DshKQpEH_cqd494eBA'
-DOCUMENT = "BQACAgIAAxkBAAOGX9kAAevFKqIj4WPOf0klTJEJD-LhAAJKCgACTCbISloChaCm-VzVHgQ"
 
 
 
-knownUsers = []  # todo: save these in a file,
-userStep = {}  # so they won't reset every time the bot restarts
 
-commands = {  # command description used in the "help" command
-    'start'       : 'Get used to the bot',
-    'help'        : 'Gives you information about the available commands',
-    'sendLongText': 'A test using the \'send_chat_action\' command',
-    'getImage'    : 'A test using multi-stage messages, custom keyboard, and media sending'
-}
 
-imageSelect = types.ReplyKeyboardMarkup(one_time_keyboard=True)  # create the image selection keyboard
-imageSelect.add('Mickey', 'Minnie')# added two buttons
 
-hideBoard = types.ReplyKeyboardRemove()  # if sent as reply_markup, will hide the keyboard
+
+#reply_markup to dialogue(yes or no)
+markup_create = types.ReplyKeyboardMarkup()
+btn_yes = types.KeyboardButton('yes')
+btn_no = types.KeyboardButton('no')
+markup_create.add(btn_yes, btn_no)
+
+#reply_markup to end dialogue
+markup_remove = types.ReplyKeyboardRemove()
+
+
+#list of bots users
+list_users = []
+
+
+
+
+@bot.message_handler(commands = ['start'])
+def write_to_list(msg):
+    send_to = msg.chat.id # chat id of the sender
+    user = msg.from_user  # --> returns user object
+    user_name = user.first_name 
+    list_users.append(user_name) #add first_name to the list
+    bot.send_message(send_to,'Hello {}'.format(user_name))
+    #print_list(list_users) #-->> prints bot_users list
+
+
+
+@bot.message_handler(commands = ['italic'])
+def send_message_in_italic(msg):
+    send_to = msg.chat.id 
+    text = '<i>In the italic style</i>' # pass the text
+    bot.send_message(send_to, text, parse_mode = 'html',disable_notification = False)
+    
+
+@bot.message_handler(func = lambda msg: msg.text == 'dialogue')
+def show_dialogue_markup(msg):
+    send_to = msg.chat.id 
+    bot.send_message(send_to,'Are you happy?',reply_markup = markup_create)
+    
+@bot.message_handler(func = lambda msg: msg.text == 'yes')
+def show_dialogue_markup(msg):
+    send_to = msg.chat.id 
+    bot.send_message(send_to,'Are you friendly?',reply_markup = markup_remove)
+
+@bot.message_handler(func = lambda msg: msg.text == 'no')
+def show_dialogue_markup(msg):
+    send_to = msg.chat.id 
+    bot.send_message(send_to,'Are you angry?',reply_markup = markup_remove)
+
+
+
+@bot.inline_handler(lambda query: query.query == 'show')
+def query_text(inline_query):
+    try:
+        r = types.InlineQueryResultArticle('1', 'Result', types.InputTextMessageContent('Result message.'))
+        r2 = types.InlineQueryResultArticle('2', 'Result2', types.InputTextMessageContent('Result message2.'))
+        bot.answer_inline_query(inline_query.id, [r, r2])
+    except Exception as e:
+        print(e)
+    ''' 
+@bot.message_handler(content_type = ['text'])
+def print_list(msg):
+    
+    bot.reply_to(msg.chat.id, 'this is a list')
+
+
 
 def get_user_step(uid):
     if uid in userStep:
@@ -109,7 +164,7 @@ def getmusic_and_sticker(message):
 		bot.send_sticker(message.chat.id, STICKER_ID)
 	if "getdocument" in message.text:
 		bot.send_document(message.chat.id, DOCUMENT)	
-
+'''
 bot.polling(none_stop = True)
 
 
